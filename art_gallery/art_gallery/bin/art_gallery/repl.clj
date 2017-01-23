@@ -13,7 +13,7 @@
 (defn start-server
   "used for starting the server in development mode from REPL"
   [& [port]]
-  (let [port (if port (Integer/parseInt port) 8080)]
+  (let [port (if port (Integer/parseInt port) 8090)]
     (reset! server
             (serve (get-handler)
                    {:port port
@@ -28,4 +28,4 @@
   (reset! server nil))
 
 ;(stop-server)
-(start-server)
+;(start-server)

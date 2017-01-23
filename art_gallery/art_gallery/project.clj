@@ -12,6 +12,7 @@
   :ring {:handler book.handler/app
          :init book.handler/init
          :destroy book.handler/destroy}
+  :main art_gallery.repl/start-server
   :profiles
   {:uberjar {:aot :all}
    :production

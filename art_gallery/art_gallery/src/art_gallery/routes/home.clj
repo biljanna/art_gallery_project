@@ -8,28 +8,14 @@
             [hiccup.page :as page]            
             [ring.util.response :as ring]))
 
-(defroutes home-routes
-  (GET "/" 
-       []
-       (indexpage))
-  (GET "/add" 
-       [] 
-       (insert_or_update))
-  (GET "/add" 
-       [title author description price error id] 
-       (insert_or_update title author description price error id))
-  (GET "/showAll" 
-       [] 
-       (show))
-  (POST "/save" 
-        [title author description price id] 
-        (save-painting title author description price id))
-  (GET "/delete/:id"
-       [id] 
-       (delete-painting id))
-  (GET "/update/:id"
-       [id] 
-       (show-painting (db/find-painting id))))
+(defn format-time [timestamp]
+  (-> "dd/MM/yyyy"
+      (java.text.SimpleDateFormat.)
+      (.format timestamp)))
+
+(defn parse-number [s]
+  (if (re-find #"^-?\d+\.?\d*$" s)
+    (read-string s)))
 
 (defn indexpage []
   (layout/common
@@ -39,15 +25,7 @@
     [:div {:class "register-switch"}
      [:a {:href "/add" :class "register-switch-label"} "Add new painting" ]
      [:a {:href "/showAll" :class "register-switch-label "} "Show paintings" ]]
-    [:img {:src "http://www.fantasyarts.net/wp-content/uploads/2015/01/winter-sparkle-original-madart-painting-megan-duncanson.jpg" :class "image"}]
-    ))
-
-(defn show []
-  (layout/common
-    [:h1 {:class "register-title"} "Paintings:"]
-    (show-paintings)
-    [:a {:href "/add" :class "register-button"} "Add new"]
-    [:a {:href "/" :class "register-button"} "Home"]))
+    [:img {:src "http://www.fantasyarts.net/wp-content/uploads/2015/01/winter-sparkle-original-madart-painting-megan-duncanson.jpg" :class "image"}] ))
 
 (defn show-paintings []
   [:table {:border 1 :class "table"}
@@ -72,6 +50,14 @@
             [:td (format-time (:time painting))]
             [:td [:a {:class "button edit" :href (str "/delete/" (h (:id painting)))} "X"]]
             [:td [:a {:class "button delete" :href (str "/update/" (h (:id painting)))} "edit"]]]))])
+
+(defn show []
+  (layout/common
+    [:h1 {:class "register-title"} "Paintings:"]
+    (show-paintings)
+    [:a {:href "/add" :class "register-button"} "Add new"]
+    [:a {:href "/" :class "register-button"} "Home"]))
+
 
 (defn insert_or_update [& [title author description price error id]]
   (layout/common
@@ -115,15 +101,6 @@
       (db/update-painting id title author description price))
   (ring/redirect "/showAll"))))
 
-(defn parse-number [s]
-  (if (re-find #"^-?\d+\.?\d*$" s)
-    (read-string s)))
-
-(defn format-time [timestamp]
-  (-> "dd/MM/yyyy"
-      (java.text.SimpleDateFormat.)
-      (.format timestamp)))
-
 (defn delete-painting [id]
   (when-not (str/blank? id)
     (db/delete-painting id))
@@ -136,6 +113,29 @@
                  (:price painting) 
                  nil
                  (:id painting)))
+
+(defroutes home-routes
+  (GET "/" 
+       []
+       (indexpage))
+  (GET "/add" 
+       [] 
+       (insert_or_update))
+  (GET "/add" 
+       [title author description price error id] 
+       (insert_or_update title author description price error id))
+  (GET "/showAll" 
+       [] 
+       (show))
+  (POST "/save" 
+        [title author description price id] 
+        (save-painting title author description price id))
+  (GET "/delete/:id"
+       [id] 
+       (delete-painting id))
+  (GET "/update/:id"
+       [id] 
+       (show-painting (db/find-painting id))))
 
 
 
